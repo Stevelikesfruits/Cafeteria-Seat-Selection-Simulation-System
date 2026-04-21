@@ -84,4 +84,4 @@ class RestaurantView(QGraphicsView):
                     else:
                         ui_seats[i].setBrush(QBrush(self.empty_seat_color))
 
-    ## 急急急急急急急急急急急急
+# 学习github分支
