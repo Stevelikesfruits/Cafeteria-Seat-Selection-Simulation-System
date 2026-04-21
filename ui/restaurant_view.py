@@ -83,3 +83,5 @@ class RestaurantView(QGraphicsView):
                         ui_seats[i].setBrush(QBrush(self.occupied_seat_color))
                     else:
                         ui_seats[i].setBrush(QBrush(self.empty_seat_color))
+
+    ## 急急急急急急急急急急急急
