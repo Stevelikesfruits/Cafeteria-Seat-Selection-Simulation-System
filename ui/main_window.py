@@ -36,7 +36,8 @@ class MainWindow(QMainWindow):
         # 将这块底板设置给self，后续操作也会同步给self
         self.setCentralWidget(central_widget)
         # 设置主要底层布局为垂直布局
-        main_layout = QVBoxLayout(central_widget)
+        main_layout = QVBoxLayout()  # 先创建空布局
+        central_widget.setLayout(main_layout)  # 给底板设置布局
 
         # 设置 顶部按钮控制栏 为水平布局
         top_bar = QHBoxLayout()
