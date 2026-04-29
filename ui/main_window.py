@@ -26,6 +26,8 @@ class MainWindow(QMainWindow):
 
         # 用init_ui()函数搭建界面
         self.init_ui()
+        # 初始化渲染操控栏界面
+        self.control_panel.init_ui()
         # 用self.engine.restaurant中的参数搭建餐厅界面
         self.restaurant_view.init_restaurant_layout(self.engine.restaurant)
 

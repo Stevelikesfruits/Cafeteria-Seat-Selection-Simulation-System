@@ -22,7 +22,7 @@ class ControlPanel(QWidget):
             PreferenceType.DIAGONAL: "#8FBC8F",  # 双人斜对角 - 绿色
             PreferenceType.ADJACENT: "#FFA500"  # 双人邻座 - 橙色
         }
-        self.init_ui()
+        #self.init_ui()
 
     # 初始化布局
     def init_ui(self):
