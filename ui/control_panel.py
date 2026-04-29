@@ -55,6 +55,30 @@ class ControlPanel(QWidget):
             lbl = QLabel(f"输入{pref.value}百分比:")
             # 数字输入框：范围0-100，默认值25
             spin = QSpinBox()
+            spin.setStyleSheet("""
+                QSpinBox {
+                    background-color: #ffffff;
+                    border: 1px solid #cccccc;
+                    border-radius: 4px;
+                    font-size: 16px;        /* 数字变大 */
+                    font-weight: bold;      /* 数字加粗 */
+                    padding: 4px 8px;
+                    color: #333333;
+                }
+
+                QSpinBox::up-button, QSpinBox::down-button {
+                    background-color: #e0e0e0;
+                    border-left: 1px solid #cccccc;
+                    width: 20px;           /* 箭头按钮变宽 */
+                    height: 12px;
+                }
+
+                QSpinBox::up-arrow, QSpinBox::down-arrow {
+                    width: 10px;
+                    height: 10px;
+                    background-color: #333333;
+                }
+            """)
             spin.setRange(0, 100)
             # 默认各25%
             spin.setValue(25)
