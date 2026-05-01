@@ -16,3 +16,4 @@ class SatisfactionCalculator:
             student.satisfaction_score = 2
         else:
             student.satisfaction_score = 1
+        # 测试
