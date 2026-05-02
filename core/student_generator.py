@@ -11,20 +11,27 @@ class StudentGenerator:
     def __init__(self):
         self.current_student_id = 1                 #current_student_id：学生id
 
-
+    #生成一批学生
     def generate_batch(self, current_time: int, pref_ratios: Dict[PreferenceType, float]) -> List[Student]:
         """
         根据当前时间和偏好比例生成一批学生
         使用倒U型函数模拟人流：假设高峰期在第30分钟左右
         """
+
+        # current_time:当前时刻
+        # pref_ratios:各偏好人群占比列表（偏好:占比）
+
         # 倒U型函数：例如 y = -0.05 * (x - 30)^2 + 15，加上正负3的随机扰动
         base_count = -0.05 * ((current_time - 30) ** 2) + 15
         base_count = max(0, int(base_count))  # 不能为负数
 
+        #随机扰动
         noise = random.randint(-2, 3)
         actual_count = max(0, base_count + noise)
 
+        #返回的学生列表
         students = []
+        
         for _ in range(actual_count):
             # 根据用户设定的比例随机决定该学生的偏好
             prefs = list(pref_ratios.keys())
