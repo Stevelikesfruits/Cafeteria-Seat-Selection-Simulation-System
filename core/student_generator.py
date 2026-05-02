@@ -4,10 +4,13 @@ import math
 from typing import List, Dict
 from models.student import Student, PreferenceType
 
-
+#生成学生对象
 class StudentGenerator:
+
+    #初始化
     def __init__(self):
-        self.current_student_id = 1
+        self.current_student_id = 1                 #current_student_id：学生id
+
 
     def generate_batch(self, current_time: int, pref_ratios: Dict[PreferenceType, float]) -> List[Student]:
         """
