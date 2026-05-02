@@ -31,13 +31,15 @@ class StudentGenerator:
 
         #返回的学生列表
         students = []
-        
+
         for _ in range(actual_count):
             # 根据用户设定的比例随机决定该学生的偏好
+            #将偏好和占比分别提取为列表 按照比例随机设定该学生的偏好
             prefs = list(pref_ratios.keys())
             weights = list(pref_ratios.values())
             chosen_pref = random.choices(prefs, weights=weights, k=1)[0]
 
+            #将id，偏好，当前时刻赋值给该学生并存入students列表
             student = Student(
                 id=self.current_student_id,
                 preference=chosen_pref,
