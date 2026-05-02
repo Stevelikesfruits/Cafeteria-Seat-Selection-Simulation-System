@@ -1,0 +1,21 @@
+# PySide6 - GUI框架
+PySide6>=6.5.0
+
+# 科学计算与数据处理
+numpy>=1.24.0
+pandas>=2.0.0
+
+# 数据可视化
+matplotlib>=3.7.0
+
+# 打包工具
+pyinstaller>=6.0.0
+
+# 项目配置与日志
+PyYAML>=6.0
+loguru>=0.7.0
+
+# 开发工具
+black>=23.0.0
+flake8>=6.0.0
+pytest>=7.4.0
