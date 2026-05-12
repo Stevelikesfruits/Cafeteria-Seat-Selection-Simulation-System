@@ -5,18 +5,23 @@ from models.student import Student, PreferenceType
 
 
 class SeatAllocator:
+    #初始化食堂数据
+    #restaurant对象包含说有桌子的信息和每个座位的占用状态
     def __init__(self, restaurant: Restaurant):
         self.restaurant = restaurant
 
+
     def allocate(self, student: Student) -> bool:
         """为单个学生分配座位。返回是否分配成功"""
-        # 策略1：寻找完美匹配的空位
+        # 尝试调用_find_perfect_match()先寻找完美匹配的空位 即满足学生的落座偏好
         table_id, seat_idx = self._find_perfect_match(student.preference)
 
-        # 策略2：如果找不到完美匹配，寻找任何空位（降级）
+        # 降级策略：如果找不到完美匹配的座位，降级寻找任何空位 调用_find_any_free_seat()
         if table_id is None:
             table_id, seat_idx = self._find_any_free_seat()
 
+
+        #为学生找到座位更新座位数组 若没找到座位返回False
         if table_id is not None and seat_idx is not None:
             # 执行落座
             table = self.restaurant.get_table(table_id)
