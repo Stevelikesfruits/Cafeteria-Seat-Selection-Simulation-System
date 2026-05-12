@@ -59,6 +59,7 @@ class SimulationEngine:
         """处理就餐完毕离开的学生"""
         remaining_students = []
         for student in self.active_students:
+            #根据落座的时间判断是否要离开
             if student.leave_time <= self.current_time:
                 # 释放座位
                 if student.is_seated:
