@@ -6,7 +6,7 @@ from core.student_generator import StudentGenerator
 from core.seat_allocator import SeatAllocator
 from core.satisfaction import SatisfactionCalculator
 
-
+#初始化模拟数据
 class SimulationEngine:
     def __init__(self):
         self.restaurant = Restaurant()
@@ -17,7 +17,7 @@ class SimulationEngine:
         self.active_students: List[Student] = []
         self.history_students: List[Student] = []  # 用于最后统计
 
-        # 默认偏好配置
+        # 默认初始偏好配置
         self.pref_ratios = {
             PreferenceType.SINGLE: 0.25,
             PreferenceType.FACE_TO_FACE: 0.25,
@@ -25,18 +25,19 @@ class SimulationEngine:
             PreferenceType.ADJACENT: 0.25
         }
 
+    #用户可根据需要重新输入偏好比例数据
     def update_preferences(self, new_ratios: Dict[PreferenceType, float]):
         """UI传入新的偏好比例"""
         self.pref_ratios = new_ratios
 
     def step(self):
-        """执行一个时间步长（如1分钟）"""
+        """执行一个单位时间（如1分钟）"""
         self.current_time += 1
 
         # 1. 检查并移除就餐结束的学生 (固定20分钟)
         self._process_departures()
 
-        # 2. 生成新学生
+        # 2. 生成下一批进入食堂的学生对象
         new_batch = self.generator.generate_batch(self.current_time, self.pref_ratios)
 
         # 3. 为新学生分配座位
@@ -50,6 +51,7 @@ class SimulationEngine:
                 SatisfactionCalculator.calculate_and_assign(student, is_perfect_match=False)
                 self.active_students.append(student)
             else:
+                #落座失败
                 SatisfactionCalculator.calculate_and_assign(student, is_perfect_match=False)  # 未落座得-1分
                 self.history_students.append(student)  # 未落座直接进入历史记录
 
