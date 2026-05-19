@@ -77,3 +77,26 @@ class SimulationEngine:
             "total_processed": len(self.history_students) + len(self.active_students),
             "total_satisfaction_score": total_score
         }
+
+
+    # 添加重置函数，同时重置偏好比例
+    def reset(self):
+        """重置模拟引擎到初始状态"""
+        # 重置餐厅实例（清空所有座位占用）
+        self.restaurant = Restaurant()
+        # 重置生成器和分配器（分配器需要关联新的restaurant实例）
+        self.generator = StudentGenerator()
+        self.allocator = SeatAllocator(self.restaurant)
+
+        # 重置时间和学生列表
+        self.current_time = 0
+        self.active_students = []
+        self.history_students = []
+
+        # 重置偏好比例到默认值
+        self.pref_ratios = {
+            PreferenceType.SINGLE: 0.25,
+            PreferenceType.FACE_TO_FACE: 0.25,
+            PreferenceType.DIAGONAL: 0.25,
+            PreferenceType.ADJACENT: 0.25
+        }
