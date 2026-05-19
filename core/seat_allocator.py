@@ -5,18 +5,23 @@ from models.student import Student, PreferenceType
 
 
 class SeatAllocator:
+    #初始化食堂数据
+    #restaurant对象包含说有桌子的信息和每个座位的占用状态
     def __init__(self, restaurant: Restaurant):
         self.restaurant = restaurant
 
+
     def allocate(self, student: Student) -> bool:
         """为单个学生分配座位。返回是否分配成功"""
-        # 策略1：寻找完美匹配的空位
+        # 尝试调用_find_perfect_match()先寻找完美匹配的空位 即满足学生的落座偏好
         table_id, seat_idx = self._find_perfect_match(student.preference)
 
-        # 策略2：如果找不到完美匹配，寻找任何空位（降级）
+        # 降级策略：如果找不到完美匹配的座位，降级寻找任何空位 调用_find_any_free_seat()
         if table_id is None:
             table_id, seat_idx = self._find_any_free_seat()
 
+
+        #为学生找到座位更新座位数组 若没找到座位返回False
         if table_id is not None and seat_idx is not None:
             # 执行落座
             table = self.restaurant.get_table(table_id)
@@ -29,26 +34,34 @@ class SeatAllocator:
 
     def _find_perfect_match(self, pref: PreferenceType) -> Tuple[Optional[int], Optional[int]]:
         """根据偏好寻找最完美的座位（简化版逻辑）"""
+        #遍历restaurant实例中的所有桌子
         for table in self.restaurant.tables.values():
+            #桌子满座状态则跳过
             if table.is_full:
                 continue
 
+            #获取空座位
             free_seats = table.get_free_seats()
+
 
             if pref == PreferenceType.SINGLE:
                 # 单人偏好：最好找一张完全空的桌子，或者没有人的那一侧
                 if len(free_seats) == table.capacity:
                     return table.id, free_seats[0]
 
+            #如果满足面对面偏好
             elif pref == PreferenceType.FACE_TO_FACE:
+                #如果是二人桌只要有一个空闲座位就恶可以
                 if isinstance(table, Table2) and len(free_seats) >= 1:
                     return table.id, free_seats[0]
+                #如果是四人桌则优先找面对面的空闲座位
                 elif isinstance(table, Table4):
                     # 简化：假设0和2，1和3是面对面
                     if 0 in free_seats and 2 in free_seats: return table.id, 0
                     if 1 in free_seats and 3 in free_seats: return table.id, 1
 
             # 这里的斜对角和邻座逻辑可以由成员B继续深入扩展完善
+            #不具体检查只要有空闲座位就行
             elif pref in [PreferenceType.DIAGONAL, PreferenceType.ADJACENT]:
                 if isinstance(table, Table4) and len(free_seats) > 0:
                     return table.id, free_seats[0]
