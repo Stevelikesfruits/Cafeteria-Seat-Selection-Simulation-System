@@ -118,14 +118,14 @@ class TestTable:
         """有空位时 is_full 返回 False"""
         t = Table(1, capacity=3, space_cost=5)
         t.seats[0] = 101
-        assert t.is_full is False
+        assert bool(t.is_full) is False
 
     def test_is_full_true(self):
         """满桌时 is_full 返回 True"""
         t = Table(1, capacity=2, space_cost=4)
         t.seats[0] = 1
         t.seats[1] = 2
-        assert t.is_full is True
+        assert bool(t.is_full) is True
 
     def test_get_free_seats_empty_table(self):
         """空桌应返回所有座位索引"""
@@ -199,6 +199,21 @@ class TestRestaurant:
         r = Restaurant(num_tables_2=5, num_tables_4=3)
         assert len(r.tables) == 8
         assert r.total_space == 200  # total_space 始终不变
+        assert r.num_tables_2 == 5
+        assert r.num_tables_4 == 3
+
+    def test_custom_table_counts_stored(self):
+        """自定义桌数应正确存储到实例属性"""
+        r = Restaurant(num_tables_2=10, num_tables_4=15)
+        assert r.num_tables_2 == 10
+        assert r.num_tables_4 == 15
+        # 10*4 + 15*6 = 40 + 90 = 130 ≤ 200
+        assert len(r.tables) == 25
+
+    def test_space_exceeded_raises_error(self):
+        """桌子总空间超过200时应抛出 ValueError"""
+        with pytest.raises(ValueError, match="超过.*单位限制"):
+            Restaurant(num_tables_2=30, num_tables_4=20)  # 30*4 + 20*6 = 240 > 200
 
     def test_get_table_exists(self):
         """存在的 table_id 应返回正确的 Table 对象"""
