@@ -54,6 +54,14 @@ class Restaurant:
         """餐厅桌子初始化"""
         # 按照文档：总空间200，双人占4，四人占6。这里默认 20*4 + 20*6 = 200
         self.total_space = 200
+        space_used = num_tables_2 * 4 + num_tables_4 * 6
+        if space_used > self.total_space:
+            raise ValueError(
+                f"桌子总空间占用({space_used})超过{self.total_space}单位限制 "
+                f"(双人桌{num_tables_2}×4 + 四人桌{num_tables_4}×6 = {space_used})"
+            )
+        self.num_tables_2 = num_tables_2
+        self.num_tables_4 = num_tables_4
         self.tables: Dict[int, Table] = {}
         #   ^^^^^^^^  ^^^^^^^^^^^^^^^   ^^
         #   属性名     类型注解（声明）    赋初值

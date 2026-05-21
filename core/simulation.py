@@ -8,8 +8,10 @@ from core.satisfaction import SatisfactionCalculator
 
 #初始化模拟数据
 class SimulationEngine:
-    def __init__(self):
-        self.restaurant = Restaurant()
+    def __init__(self, num_tables_2: int = 20, num_tables_4: int = 20):
+        self.num_tables_2 = num_tables_2
+        self.num_tables_4 = num_tables_4
+        self.restaurant = Restaurant(num_tables_2, num_tables_4)
         self.generator = StudentGenerator()
         self.allocator = SeatAllocator(self.restaurant)
 
@@ -83,10 +85,14 @@ class SimulationEngine:
 
 
     # 添加重置函数，同时重置偏好比例
-    def reset(self):
+    def reset(self, num_tables_2: int = None, num_tables_4: int = None):
         """重置模拟引擎到初始状态"""
+        if num_tables_2 is not None:
+            self.num_tables_2 = num_tables_2
+        if num_tables_4 is not None:
+            self.num_tables_4 = num_tables_4
         # 重置餐厅实例（清空所有座位占用）
-        self.restaurant = Restaurant()
+        self.restaurant = Restaurant(self.num_tables_2, self.num_tables_4)
         # 重置生成器和分配器（分配器需要关联新的restaurant实例）
         self.generator = StudentGenerator()
         self.allocator = SeatAllocator(self.restaurant)
