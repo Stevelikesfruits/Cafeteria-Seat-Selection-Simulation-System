@@ -234,6 +234,11 @@ class MainWindow(QMainWindow):
 
 
 
+        # 重置实时统计信息栏为初始值
+        self.lbl_time.setText("时间: 0 分钟")
+        self.lbl_occupancy.setText("上座率: 0.0%")
+        self.lbl_satisfaction.setText("满意度: 0.00")
+
     # 仿真步进逻辑
     def on_simulation_step(self):
         # 引擎执行一次步进，推进1分钟，处理排座/顾客离店等逻辑
