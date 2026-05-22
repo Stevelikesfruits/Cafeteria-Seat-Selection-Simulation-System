@@ -239,3 +239,9 @@ class MainWindow(QMainWindow):
         # 引擎执行一次步进，推进1分钟，处理排座/顾客离店等逻辑
         self.engine.step()
         self.restaurant_view.update_view(self.engine.restaurant)
+
+        # 每步执行后更新实时统计信息栏
+        stats = self.engine.get_real_time_stats()
+        self.lbl_time.setText(f"时间: {stats['current_time']} 分钟")
+        self.lbl_occupancy.setText(f"上座率: {stats['occupancy_rate']}%")
+        self.lbl_satisfaction.setText(f"满意度: {stats['avg_satisfaction']}")
