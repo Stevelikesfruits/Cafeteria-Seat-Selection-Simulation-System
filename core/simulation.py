@@ -113,17 +113,12 @@ class SimulationEngine:
         # 计算上座率百分比，总座位为0时兜底返回0避免除零错误
         occupancy_rate = (occupied_seats / total_seats * 100) if total_seats > 0 else 0.0
 
-        # 合并历史学生和当前在座学生，统计所有已处理的学生
+        # 合并历史学生和当前在座学生，累加全部满意度得分作为综合满意度
         all_students = self.history_students + self.active_students
-        total_count = len(all_students)
-        # 计算平均满意度，无人时兜底返回0避免除零错误
-        avg_satisfaction = (
-            sum(s.satisfaction_score for s in all_students) / total_count
-            if total_count > 0 else 0.0
-        )
+        total_satisfaction = sum(s.satisfaction_score for s in all_students)
 
         return {
             "current_time": self.current_time,
             "occupancy_rate": round(occupancy_rate, 1),
-            "avg_satisfaction": round(avg_satisfaction, 2),
+            "total_satisfaction": total_satisfaction,
         }

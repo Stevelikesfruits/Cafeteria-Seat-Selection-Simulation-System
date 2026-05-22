@@ -120,8 +120,8 @@ class MainWindow(QMainWindow):
         self.lbl_occupancy = QLabel("上座率: 0.0%")
         self.lbl_occupancy.setStyleSheet(card_style)
 
-        # 平均满意度显示标签，初始为0.00
-        self.lbl_satisfaction = QLabel("满意度: 0.00")
+        # 综合满意度显示标签，初始为0
+        self.lbl_satisfaction = QLabel("满意度: 0")
         self.lbl_satisfaction.setStyleSheet(card_style)
 
         # 将三个标签依次加入信息栏布局
@@ -237,7 +237,7 @@ class MainWindow(QMainWindow):
         # 重置实时统计信息栏为初始值
         self.lbl_time.setText("时间: 0 分钟")
         self.lbl_occupancy.setText("上座率: 0.0%")
-        self.lbl_satisfaction.setText("满意度: 0.00")
+        self.lbl_satisfaction.setText("满意度: 0")
 
     # 仿真步进逻辑
     def on_simulation_step(self):
@@ -249,4 +249,4 @@ class MainWindow(QMainWindow):
         stats = self.engine.get_real_time_stats()
         self.lbl_time.setText(f"时间: {stats['current_time']} 分钟")
         self.lbl_occupancy.setText(f"上座率: {stats['occupancy_rate']}%")
-        self.lbl_satisfaction.setText(f"满意度: {stats['avg_satisfaction']}")
+        self.lbl_satisfaction.setText(f"满意度: {stats['total_satisfaction']}")
