@@ -42,13 +42,13 @@ class SimulationEngine:
 
         # 3. 为新学生分配座位
         for student in new_batch:
-            success = self.allocator.allocate(student)
+            success, is_perfect = self.allocator.allocate(student)
 
             if success:
                 # 根据任务书，就餐时间固定为20分钟
                 student.leave_time = self.current_time + 20
-                # TODO: 让allocator返回是否是perfect_match，这里为了演示暂时都算作非完美(+1)
-                SatisfactionCalculator.calculate_and_assign(student, is_perfect_match=False)
+                # 根据分配器返回的结果决定是完美匹配还是降级匹配
+                SatisfactionCalculator.calculate_and_assign(student, is_perfect_match=is_perfect)
                 self.active_students.append(student)
             else:
                 #落座失败
