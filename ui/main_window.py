@@ -94,6 +94,44 @@ class MainWindow(QMainWindow):
         # 将顶部按钮布局，装入main_layout底层垂直布局里
         main_layout.addLayout(top_bar)
 
+        # 创建实时统计信息栏，水平排列三个指标卡片
+        self.stats_bar = QHBoxLayout()
+        # 三个卡片居中显示
+        self.stats_bar.setAlignment(Qt.AlignCenter)
+
+        # 统一样式：白色背景、圆角、边框、加粗字体
+        card_style = """
+            QLabel {
+                background-color: white;
+                border-radius: 8px;
+                border: 1px solid #ccc;
+                padding: 8px 20px;
+                font-size: 16px;
+                font-weight: bold;
+                color: #333;
+            }
+        """
+
+        # 时间显示标签，初始为0分钟
+        self.lbl_time = QLabel("时间: 0 分钟")
+        self.lbl_time.setStyleSheet(card_style)
+
+        # 上座率显示标签，初始为0.0%
+        self.lbl_occupancy = QLabel("上座率: 0.0%")
+        self.lbl_occupancy.setStyleSheet(card_style)
+
+        # 平均满意度显示标签，初始为0.00
+        self.lbl_satisfaction = QLabel("满意度: 0.00")
+        self.lbl_satisfaction.setStyleSheet(card_style)
+
+        # 将三个标签依次加入信息栏布局
+        self.stats_bar.addWidget(self.lbl_time)
+        self.stats_bar.addWidget(self.lbl_occupancy)
+        self.stats_bar.addWidget(self.lbl_satisfaction)
+
+        # 将信息栏加入底层垂直布局，位于按钮栏下方
+        main_layout.addLayout(self.stats_bar)
+
 
         # 2. 下方主内容区 (左侧视图，右侧面板)
         content_layout = QHBoxLayout()
