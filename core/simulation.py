@@ -103,3 +103,27 @@ class SimulationEngine:
             PreferenceType.DIAGONAL: 0.25,
             PreferenceType.ADJACENT: 0.25
         }
+
+    def get_real_time_stats(self) -> dict:
+        """获取实时统计数据，供UI信息栏每步刷新显示"""
+        # 遍历所有桌子，累加容量得到总座位数
+        total_seats = sum(t.capacity for t in self.restaurant.tables.values())
+        # 遍历所有桌子，累加已被占用的座位数
+        occupied_seats = sum(t.occupied_count for t in self.restaurant.tables.values())
+        # 计算上座率百分比，总座位为0时兜底返回0避免除零错误
+        occupancy_rate = (occupied_seats / total_seats * 100) if total_seats > 0 else 0.0
+
+        # 合并历史学生和当前在座学生，统计所有已处理的学生
+        all_students = self.history_students + self.active_students
+        total_count = len(all_students)
+        # 计算平均满意度，无人时兜底返回0避免除零错误
+        avg_satisfaction = (
+            sum(s.satisfaction_score for s in all_students) / total_count
+            if total_count > 0 else 0.0
+        )
+
+        return {
+            "current_time": self.current_time,
+            "occupancy_rate": round(occupancy_rate, 1),
+            "avg_satisfaction": round(avg_satisfaction, 2),
+        }
