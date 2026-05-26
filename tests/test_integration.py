@@ -373,24 +373,14 @@ class TestGenerateBatchEdgeCases:
 
 
 # ============================================================
-# 六、Qt 信号槽 Bug 复现 -- 已知缺陷
+# 六、Qt 信号槽联调
 # ============================================================
 @pytest.mark.skipif(not HAS_QT, reason="需要 PySide6 环境")
 class TestSignalSlotBug:
-    """
-    复现 Bug: PySide6 Signal(dict) 无法正确序列化 Python dict
-    导致 engine.update_preferences 收到空 dict, 引发 IndexError
+    """测试通过 Qt 信号槽路径更新偏好比例"""
 
-    Bug 追踪: Shiboken::Conversions::_pythonToCppCopy:
-              Cannot copy-convert (dict) to C++.
-    """
-
-    @pytest.mark.xfail(
-        reason="已知缺陷: PySide6 Signal(dict) Shiboken 转换失败, "
-               "导致 engine.pref_ratios 变为空 dict {}",
-        strict=True)
-    def test_signal_dict_conversion_bug(self):
-        """通过真实 Qt 信号路径修改偏好 -> 预期崩溃 (已知缺陷)"""
+    def test_signal_preferences_update(self):
+        """通过真实 Qt 信号路径修改偏好, 验证 engine.pref_ratios 正确更新"""
         app = QApplication.instance()
         if app is None:
             app = QApplication(sys.argv)
@@ -406,16 +396,13 @@ class TestSignalSlotBug:
         cp.pref_inputs[PreferenceType.DIAGONAL].setValue(0)
         cp.pref_inputs[PreferenceType.ADJACENT].setValue(0)
 
-        # 此时信号已发射, 但 engine.pref_ratios 因 Shiboken 转换失败变空
+        # 信号应正常传递 dict 到 engine
         assert len(engine.pref_ratios) == 4, \
-            f"BUG: Signal(dict) 转换失败, pref_ratios 应含4键, 实际={engine.pref_ratios}"
+            f"pref_ratios 应含4键, 实际={engine.pref_ratios}"
+        assert engine.pref_ratios[PreferenceType.SINGLE] == 1.0
 
-        # 尝试 step 应正常执行
+        # step 应正常执行, 学生偏好全为 SINGLE
         engine.current_time = 29
-        try:
-            engine.step()
-        except IndexError:
-            pytest.fail(
-                "BUG确认: Signal(dict) 导致 pref_ratios={}, "
-                "step() -> generate_batch -> random.choices 收到空列表崩溃"
-            )
+        engine.step()
+        for s in engine.active_students:
+            assert s.preference == PreferenceType.SINGLE
