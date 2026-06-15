@@ -113,10 +113,18 @@ class ControlPanel(QWidget):
             QLabel { color: #333; font-weight: bold; border: none; }
             QComboBox {
                 background-color: white;
+                color: #333;
                 border: 1px solid #ccc;
                 border-radius: 4px;
                 padding: 4px 8px;
                 font-size: 14px;
+            }
+            /* 下拉列表项的样式，也同样显式指定颜色防止深色模式下文字不可见 */
+            QComboBox QAbstractItemView {
+                background-color: white;
+                color: #333;
+                selection-background-color: #2979ff;
+                selection-color: white;
             }
         """)
         dist_layout = QVBoxLayout(dist_frame)
