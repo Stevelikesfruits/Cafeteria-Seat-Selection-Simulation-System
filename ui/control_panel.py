@@ -253,7 +253,7 @@ class ControlPanel(QWidget):
         self.distribution_changed.emit(selected)
 
     def set_inputs_enabled(self, enabled: bool):
-        """仿真开始/结束后启用或禁用侧边栏控件"""
+        """仿真开始/结束后启用或禁用侧边栏控件（人流函数曲线按钮始终保持可用）"""
         self.dist_combo.setEnabled(enabled)
         self.btn_pref_settings.setEnabled(enabled)
-        self.btn_chart.setEnabled(enabled)
+        # btn_chart 始终可用，仿真中途可打开查看实时进度
