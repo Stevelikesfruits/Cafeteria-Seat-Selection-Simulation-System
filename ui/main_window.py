@@ -5,6 +5,7 @@ from PySide6.QtCore import QTimer, Qt
 from core.simulation import SimulationEngine
 from ui.control_panel import ControlPanel
 from ui.restaurant_view import RestaurantView
+from ui.charts import DistributionLineChart
 from ui.table_count_dialog import TableCountDialog
 
 # 定义MainWindow类
@@ -37,6 +38,21 @@ class MainWindow(QMainWindow):
         self.control_panel.init_ui()
         # 用self.engine.restaurant中的参数搭建餐厅界面
         self.restaurant_view.init_restaurant_layout(self.engine.restaurant)
+
+        # 创建人流分布函数曲线图的独立窗口
+        self.chart_window = QWidget()
+        self.chart_window.setWindowTitle("人流分布函数曲线")
+        self.chart_window.resize(700, 400)
+        # 将DistributionLineChart图表放入窗口布局
+        chart_layout = QVBoxLayout(self.chart_window)
+        chart_layout.setContentsMargins(0, 0, 0, 0)
+        self.dist_chart = DistributionLineChart()
+        chart_layout.addWidget(self.dist_chart)
+        # 显示图表窗口
+        self.chart_window.show()
+
+        # 当用户在控制面板切换分布类型时，同步更新图表窗口的曲线
+        self.control_panel.distribution_changed.connect(self.dist_chart.set_distribution)
 
     # 定义ui界面设置函数
     def init_ui(self):
