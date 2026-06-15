@@ -71,6 +71,8 @@ class DistributionLineChart(QWidget):
         super().__init__()
         # 默认显示二次函数倒U型曲线
         self.distribution_type = DistributionType.QUADRATIC
+        # 当前仿真时间，驱动竖线位置和绿色填充区域
+        self.current_time = 0
         self._init_ui()
 
     def _init_ui(self):
@@ -94,12 +96,22 @@ class DistributionLineChart(QWidget):
         self._draw()
 
     def set_distribution(self, dist_type: DistributionType):
-        """切换分布类型并重绘曲线，由控制面板信号触发"""
+        """切换分布类型并重绘曲线，由控制面板下拉框信号触发"""
         self.distribution_type = dist_type
         self._draw()
 
+    def set_time(self, time: int):
+        """更新当前仿真时间，驱动竖线右移和绿色填充增长，由主窗口每步调用"""
+        self.current_time = time
+        self._draw()
+
+    def reset(self):
+        """重置竖线到0位置，清除绿色填充，供新一轮仿真开始时调用"""
+        self.current_time = 0
+        self._draw()
+
     def _draw(self):
-        """根据当前分布类型计算并绘制函数曲线"""
+        """根据当前分布类型和仿真时间绘制函数曲线、绿色填充区域和黑色时间竖线"""
         self.ax.clear()
 
         # 生成0到60分钟的x轴采样点，200个点保证曲线平滑
@@ -123,9 +135,19 @@ class DistributionLineChart(QWidget):
         # 将负数截断为0，学生人数不能为负
         y = np.clip(y, 0, None)
 
-        # 绘制蓝色曲线并在曲线下方填充浅蓝色半透明区域
+        # 绘制蓝色曲线作为背景，曲线始终保持完整不动
         self.ax.plot(x, y, color='#2979ff', linewidth=2)
-        self.ax.fill_between(x, 0, y, color='#2979ff', alpha=0.1)
+
+        # 绿色填充：从x=0到x=current_time之间、曲线下方与y=0之间的区域
+        # 表示"已走过的时间"，随时间推进向右扩展
+        if self.current_time > 0:
+            fill_mask = x <= self.current_time
+            self.ax.fill_between(x[fill_mask], 0, y[fill_mask],
+                                 color='#4CAF50', alpha=0.35)
+
+        # 黑色实线竖线标记当前仿真时间位置
+        if self.current_time >= 0:
+            self.ax.axvline(x=self.current_time, color='black', linewidth=2)
 
         # 设置坐标轴标签、范围、网格
         self.ax.set_xlabel('仿真时间 (分钟)', fontsize=10)

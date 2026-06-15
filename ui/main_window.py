@@ -186,6 +186,9 @@ class MainWindow(QMainWindow):
             QMessageBox.warning(self, "错误", "偏好权重不能全部为0，请至少给一个偏好设置非零值！")
             return
 
+        # 新仿真开始前重置图表竖线和绿色填充到x=0
+        self.dist_chart_window.reset()
+
         # 开始后禁用侧边栏控件和弹窗输入框
         self.control_panel.set_inputs_enabled(False)
         self.pref_settings_window.set_inputs_enabled(False)
@@ -284,3 +287,6 @@ class MainWindow(QMainWindow):
         self.lbl_occupancy.setText(f"上座率: {stats['occupancy_rate']}%")
         self.lbl_satisfaction.setText(f"满意度: {stats['total_satisfaction']}")
         self.lbl_diners.setText(f"就餐人数/总座位数: {stats['active_diners']}/{stats['total_seats']}")
+
+        # 同步更新人流函数曲线图上的时间竖线和绿色填充
+        self.dist_chart_window.set_time(stats['current_time'])

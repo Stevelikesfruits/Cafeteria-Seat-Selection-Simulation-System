@@ -151,6 +151,14 @@ class DistributionChartWindow(QWidget):
         """切换分布类型时更新曲线，由侧边栏下拉框信号触发"""
         self.chart.set_distribution(dist_type)
 
+    def set_time(self, time: int):
+        """每仿真步更新竖线位置，由主窗口on_simulation_step驱动"""
+        self.chart.set_time(time)
+
+    def reset(self):
+        """新一轮仿真开始时重置竖线和绿色填充"""
+        self.chart.reset()
+
     def closeEvent(self, event):
         """关闭窗口时隐藏而非销毁，再次打开数据不丢失"""
         self.hide()
