@@ -125,6 +125,8 @@ class SimulationEngine:
 
         return {
             "current_time": self.current_time,
+            "active_diners": len(self.active_students),
+            "total_seats": total_seats,
             "occupancy_rate": round(occupancy_rate, 1),
             "total_satisfaction": total_satisfaction,
         }

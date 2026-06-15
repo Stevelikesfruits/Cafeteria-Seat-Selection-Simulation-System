@@ -131,10 +131,15 @@ class MainWindow(QMainWindow):
         self.lbl_satisfaction = QLabel("满意度: 0")
         self.lbl_satisfaction.setStyleSheet(card_style)
 
-        # 将三个标签依次加入信息栏布局
+        # 就餐人数与总座位数显示标签，初始均为0
+        self.lbl_diners = QLabel("就餐人数/总座位数: 0/0")
+        self.lbl_diners.setStyleSheet(card_style)
+
+        # 将四个标签依次加入信息栏布局
         self.stats_bar.addWidget(self.lbl_time)
         self.stats_bar.addWidget(self.lbl_occupancy)
         self.stats_bar.addWidget(self.lbl_satisfaction)
+        self.stats_bar.addWidget(self.lbl_diners)
 
         # 将信息栏加入底层垂直布局，位于按钮栏下方
         main_layout.addLayout(self.stats_bar)
@@ -251,6 +256,7 @@ class MainWindow(QMainWindow):
         self.lbl_time.setText("时间: 0 分钟")
         self.lbl_occupancy.setText("上座率: 0.0%")
         self.lbl_satisfaction.setText("满意度: 0")
+        self.lbl_diners.setText("就餐人数/总座位数: 0/0")
 
     # 仿真步进逻辑
     def on_simulation_step(self):
@@ -263,3 +269,4 @@ class MainWindow(QMainWindow):
         self.lbl_time.setText(f"时间: {stats['current_time']} 分钟")
         self.lbl_occupancy.setText(f"上座率: {stats['occupancy_rate']}%")
         self.lbl_satisfaction.setText(f"满意度: {stats['total_satisfaction']}")
+        self.lbl_diners.setText(f"就餐人数/总座位数: {stats['active_diners']}/{stats['total_seats']}")
