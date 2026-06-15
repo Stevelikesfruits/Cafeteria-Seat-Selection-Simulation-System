@@ -11,26 +11,26 @@ class SeatAllocator:
         self.restaurant = restaurant
 
 
-    def allocate(self, student: Student) -> bool:
-        """为单个学生分配座位。返回是否分配成功"""
+    def allocate(self, student: Student) -> tuple:
+        """为单个学生分配座位。返回(是否分配成功, 是否完美匹配)"""
         # 尝试调用_find_perfect_match()先寻找完美匹配的空位 即满足学生的落座偏好
         table_id, seat_idx = self._find_perfect_match(student.preference)
+        # 记录是否找到了完美匹配的座位
+        is_perfect = table_id is not None
 
         # 降级策略：如果找不到完美匹配的座位，降级寻找任何空位 调用_find_any_free_seat()
         if table_id is None:
             table_id, seat_idx = self._find_any_free_seat()
 
-
-        #为学生找到座位更新座位数组 若没找到座位返回False
         if table_id is not None and seat_idx is not None:
             # 执行落座
             table = self.restaurant.get_table(table_id)
             table.seats[seat_idx] = student.id
             student.seated_table_id = table_id
             student.seated_seat_indices = [seat_idx]
-            return True
+            return True, is_perfect
 
-        return False
+        return False, False
 
     def _find_perfect_match(self, pref: PreferenceType) -> Tuple[Optional[int], Optional[int]]:
         """根据偏好寻找最完美的座位（简化版逻辑）"""

@@ -2,7 +2,7 @@
 from typing import Dict, List
 from models.restaurant import Restaurant
 from models.student import Student, PreferenceType
-from core.student_generator import StudentGenerator
+from core.student_generator import StudentGenerator, DistributionType
 from core.seat_allocator import SeatAllocator
 from core.satisfaction import SatisfactionCalculator
 
@@ -19,6 +19,9 @@ class SimulationEngine:
         self.active_students: List[Student] = []
         self.history_students: List[Student] = []  # 用于最后统计
 
+        # 默认人数分布类型为二次函数倒U型
+        self.distribution_type = DistributionType.QUADRATIC
+
         # 默认初始偏好配置
         self.pref_ratios = {
             PreferenceType.SINGLE: 0.25,
@@ -32,6 +35,11 @@ class SimulationEngine:
         """UI传入新的偏好比例"""
         self.pref_ratios = new_ratios
 
+    #用户可选择学生到达人数的分布类型
+    def update_distribution(self, dist_type: DistributionType):
+        """UI传入新的人数分布类型"""
+        self.distribution_type = dist_type
+
     def step(self):
         """执行一个单位时间（如1分钟）"""
         self.current_time += 1
@@ -40,17 +48,17 @@ class SimulationEngine:
         self._process_departures()
 
         # 2. 生成下一批进入食堂的学生对象
-        new_batch = self.generator.generate_batch(self.current_time, self.pref_ratios)
+        new_batch = self.generator.generate_batch(self.current_time, self.pref_ratios, self.distribution_type)
 
         # 3. 为新学生分配座位
         for student in new_batch:
-            success = self.allocator.allocate(student)
+            success, is_perfect = self.allocator.allocate(student)
 
             if success:
                 # 根据任务书，就餐时间固定为20分钟
                 student.leave_time = self.current_time + 20
-                # TODO: 让allocator返回是否是perfect_match，这里为了演示暂时都算作非完美(+1)
-                SatisfactionCalculator.calculate_and_assign(student, is_perfect_match=False)
+                # 根据分配器返回的结果决定是完美匹配还是降级匹配
+                SatisfactionCalculator.calculate_and_assign(student, is_perfect_match=is_perfect)
                 self.active_students.append(student)
             else:
                 #落座失败
@@ -108,4 +116,27 @@ class SimulationEngine:
             PreferenceType.FACE_TO_FACE: 0.25,
             PreferenceType.DIAGONAL: 0.25,
             PreferenceType.ADJACENT: 0.25
+        }
+        # 重置人数分布类型为默认二次函数倒U型
+        self.distribution_type = DistributionType.QUADRATIC
+
+    def get_real_time_stats(self) -> dict:
+        """获取实时统计数据，供UI信息栏每步刷新显示"""
+        # 遍历所有桌子，累加容量得到总座位数
+        total_seats = sum(t.capacity for t in self.restaurant.tables.values())
+        # 遍历所有桌子，累加已被占用的座位数
+        occupied_seats = sum(t.occupied_count for t in self.restaurant.tables.values())
+        # 计算上座率百分比，总座位为0时兜底返回0避免除零错误
+        occupancy_rate = (occupied_seats / total_seats * 100) if total_seats > 0 else 0.0
+
+        # 合并历史学生和当前在座学生，累加全部满意度得分作为综合满意度
+        all_students = self.history_students + self.active_students
+        total_satisfaction = sum(s.satisfaction_score for s in all_students)
+
+        return {
+            "current_time": self.current_time,
+            "active_diners": len(self.active_students),
+            "total_seats": total_seats,
+            "occupancy_rate": round(occupancy_rate, 1),
+            "total_satisfaction": total_satisfaction,
         }
