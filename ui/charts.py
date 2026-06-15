@@ -1,8 +1,10 @@
 # ui/charts.py
 from PySide6.QtWidgets import QWidget, QVBoxLayout
 import matplotlib.pyplot as plt
+import numpy as np
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg as FigureCanvas
 from models.student import PreferenceType
+from core.student_generator import DistributionType
 
 # ===== 新增下面这两行代码来配置中文字体 =====
 # 按顺序尝试加载：微软雅黑 -> 黑体 -> 苹果中文字体
@@ -59,4 +61,101 @@ class PreferencePieChart(QWidget):
         # 自动调整布局（避免标签/百分比文字溢出）
         self.figure.tight_layout()
         # 刷新画布，渲染新图表
+        self.canvas.draw()
+
+
+class DistributionLineChart(QWidget):
+    """人流分布函数曲线图组件，显示所选分布类型的学生到达人数随时间变化曲线"""
+
+    def __init__(self):
+        super().__init__()
+        # 默认显示二次函数倒U型曲线
+        self.distribution_type = DistributionType.QUADRATIC
+        # 当前仿真时间，驱动竖线位置和绿色填充区域
+        self.current_time = 0
+        self._init_ui()
+
+    def _init_ui(self):
+        """初始化matplotlib图表和布局"""
+        layout = QVBoxLayout(self)
+        # 移除边距让图表填满窗口
+        layout.setContentsMargins(0, 0, 0, 0)
+
+        # 创建图表，figsize宽高比适合展示函数曲线
+        self.figure, self.ax = plt.subplots(figsize=(8, 4))
+        # 画布背景设为白色
+        self.figure.patch.set_facecolor('white')
+        # 绘图区域背景设为浅灰
+        self.ax.set_facecolor('#FAFAFA')
+
+        # 包装为Qt控件
+        self.canvas = FigureCanvas(self.figure)
+        layout.addWidget(self.canvas)
+
+        # 绘制默认曲线
+        self._draw()
+
+    def set_distribution(self, dist_type: DistributionType):
+        """切换分布类型并重绘曲线，由控制面板下拉框信号触发"""
+        self.distribution_type = dist_type
+        self._draw()
+
+    def set_time(self, time: int):
+        """更新当前仿真时间，驱动竖线右移和绿色填充增长，由主窗口每步调用"""
+        self.current_time = time
+        self._draw()
+
+    def reset(self):
+        """重置竖线到0位置，清除绿色填充，供新一轮仿真开始时调用"""
+        self.current_time = 0
+        self._draw()
+
+    def _draw(self):
+        """根据当前分布类型和仿真时间绘制函数曲线、绿色填充区域和黑色时间竖线"""
+        self.ax.clear()
+
+        # 生成0到60分钟的x轴采样点，200个点保证曲线平滑
+        x = np.linspace(0, 60, 200)
+
+        if self.distribution_type == DistributionType.QUADRATIC:
+            # 二次函数倒U型：y = -0.05*(x-30)^2 + 15
+            y = -0.05 * ((x - 30) ** 2) + 15
+            title = '二次函数(倒U型) — 峰值在30分钟'
+        elif self.distribution_type == DistributionType.NORMAL:
+            # 正态分布单峰：μ=30, σ=8, 峰值20人/分钟
+            y = 20 * np.exp(-((x - 30) ** 2) / (2 * 8 ** 2))
+            title = '正态分布(单峰) μ=30 σ=8 — 峰值在30分钟'
+        elif self.distribution_type == DistributionType.TRI_MODAL:
+            # 三峰正态分布：三个峰分别在第10、30、50分钟, σ=6
+            y = (10 * np.exp(-((x - 10) ** 2) / (2 * 6 ** 2)) +
+                 20 * np.exp(-((x - 30) ** 2) / (2 * 6 ** 2)) +
+                 10 * np.exp(-((x - 50) ** 2) / (2 * 6 ** 2)))
+            title = '三峰正态分布 — 峰位于第10/30/50分钟'
+
+        # 将负数截断为0，学生人数不能为负
+        y = np.clip(y, 0, None)
+
+        # 绘制蓝色曲线作为背景，曲线始终保持完整不动
+        self.ax.plot(x, y, color='#2979ff', linewidth=2)
+
+        # 绿色填充：从x=0到x=current_time之间、曲线下方与y=0之间的区域
+        # 表示"已走过的时间"，随时间推进向右扩展
+        if self.current_time > 0:
+            fill_mask = x <= self.current_time
+            self.ax.fill_between(x[fill_mask], 0, y[fill_mask],
+                                 color='#4CAF50', alpha=0.35)
+
+        # 黑色实线竖线标记当前仿真时间位置
+        if self.current_time >= 0:
+            self.ax.axvline(x=self.current_time, color='black', linewidth=2)
+
+        # 设置坐标轴标签、范围、网格
+        self.ax.set_xlabel('仿真时间 (分钟)', fontsize=10)
+        self.ax.set_ylabel('到达人数', fontsize=10)
+        self.ax.set_title(title, fontsize=12, fontweight='bold')
+        self.ax.set_xlim(0, 60)
+        self.ax.set_ylim(0, 25)
+        self.ax.grid(True, linestyle='--', alpha=0.3)
+
+        self.figure.tight_layout()
         self.canvas.draw()
