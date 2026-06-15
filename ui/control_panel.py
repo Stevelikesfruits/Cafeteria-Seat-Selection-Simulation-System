@@ -165,7 +165,7 @@ class ControlPanel(QWidget):
         super().__init__()
         self._init_ui()
 
-    def _init_ui(self):
+    def init_ui(self):
         layout = QVBoxLayout(self)
         layout.setSpacing(20)
 
