@@ -157,6 +157,8 @@ class MainWindow(QMainWindow):
         self.control_panel.setFixedWidth(280)
         # 当产生修改信号时，自动通知引擎，更新参数
         self.control_panel.preferences_changed.connect(self.engine.update_preferences)
+        # 当用户切换人数分布类型时，通知引擎更新分布类型
+        self.control_panel.distribution_changed.connect(self.engine.update_distribution)
 
         # 将self.restaurant_view加入到content_layout布局中，大小占比为3
         content_layout.addWidget(self.restaurant_view, 3)

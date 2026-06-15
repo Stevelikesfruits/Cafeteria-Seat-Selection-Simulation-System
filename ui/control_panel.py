@@ -1,8 +1,10 @@
 # ui/control_panel.py
-from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QSpinBox, QFrame, QMessageBox
+from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QSpinBox, QFrame, QMessageBox, QComboBox
 from PySide6.QtCore import Signal
 # 导入学生比例
 from models.student import PreferenceType
+# 导入人数分布类型枚举
+from core.student_generator import DistributionType
 # 导入自定义的饼状图
 from ui.charts import PreferencePieChart
 
@@ -11,6 +13,8 @@ class ControlPanel(QWidget):
     # 创建一个信号，同时信号附带一个字典信息
     # 此信号需要创建在__init__之前，属于类属性
     preferences_changed = Signal(object)
+    # 人数分布类型变更信号，附带DistributionType枚举值
+    distribution_changed = Signal(object)
 
     def __init__(self):
         super().__init__()
@@ -98,6 +102,38 @@ class ControlPanel(QWidget):
         self.pie_chart = PreferencePieChart()
         layout.addWidget(self.pie_chart)
 
+        # 人数分布类型选择区域，让用户选择学生到达模型
+        dist_frame = QFrame()
+        dist_frame.setStyleSheet("""
+            QFrame {
+                background-color: white;
+                border-radius: 5px;
+                border: 1px solid #333;
+            }
+            QLabel { color: #333; font-weight: bold; border: none; }
+            QComboBox {
+                background-color: white;
+                border: 1px solid #ccc;
+                border-radius: 4px;
+                padding: 4px 8px;
+                font-size: 14px;
+            }
+        """)
+        dist_layout = QVBoxLayout(dist_frame)
+        dist_label = QLabel("人数分布类型:")
+        self.dist_combo = QComboBox()
+        # 将DistributionType枚举中的三个选项加入下拉框，显示中文名称，存储枚举值
+        for dist_type in DistributionType:
+            self.dist_combo.addItem(dist_type.value, dist_type)
+        # 默认选中二次函数倒U型
+        self.dist_combo.setCurrentIndex(0)
+        # 用户切换选项时触发信号
+        self.dist_combo.currentIndexChanged.connect(self.on_distribution_changed)
+
+        dist_layout.addWidget(dist_label)
+        dist_layout.addWidget(self.dist_combo)
+        layout.addWidget(dist_frame)
+
         # 拉伸因子：让控件靠上显示，下方留空
         layout.addStretch()
 
@@ -116,8 +152,15 @@ class ControlPanel(QWidget):
             new_ratios = {pref: self.pref_inputs[pref].value() / 100.0 for pref in PreferenceType}
             self.preferences_changed.emit(new_ratios)
 
+    # 分布类型改变的槽函数
+    def on_distribution_changed(self):
+        """当用户切换人数分布类型时，发送信号给仿真引擎"""
+        selected = self.dist_combo.currentData()
+        self.distribution_changed.emit(selected)
+
     # 启用/禁用函数
     def set_inputs_enabled(self, enabled: bool):
-        """仿真开始后，禁用输入框"""
+        """仿真开始后，禁用输入框和下拉框"""
         for spin in self.pref_inputs.values():
             spin.setEnabled(enabled)
+        self.dist_combo.setEnabled(enabled)

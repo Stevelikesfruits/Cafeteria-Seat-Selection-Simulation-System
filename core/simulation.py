@@ -2,7 +2,7 @@
 from typing import Dict, List
 from models.restaurant import Restaurant
 from models.student import Student, PreferenceType
-from core.student_generator import StudentGenerator
+from core.student_generator import StudentGenerator, DistributionType
 from core.seat_allocator import SeatAllocator
 from core.satisfaction import SatisfactionCalculator
 
@@ -19,6 +19,9 @@ class SimulationEngine:
         self.active_students: List[Student] = []
         self.history_students: List[Student] = []  # 用于最后统计
 
+        # 默认人数分布类型为二次函数倒U型
+        self.distribution_type = DistributionType.QUADRATIC
+
         # 默认初始偏好配置
         self.pref_ratios = {
             PreferenceType.SINGLE: 0.25,
@@ -32,6 +35,11 @@ class SimulationEngine:
         """UI传入新的偏好比例"""
         self.pref_ratios = new_ratios
 
+    #用户可选择学生到达人数的分布类型
+    def update_distribution(self, dist_type: DistributionType):
+        """UI传入新的人数分布类型"""
+        self.distribution_type = dist_type
+
     def step(self):
         """执行一个单位时间（如1分钟）"""
         self.current_time += 1
@@ -40,7 +48,7 @@ class SimulationEngine:
         self._process_departures()
 
         # 2. 生成下一批进入食堂的学生对象
-        new_batch = self.generator.generate_batch(self.current_time, self.pref_ratios)
+        new_batch = self.generator.generate_batch(self.current_time, self.pref_ratios, self.distribution_type)
 
         # 3. 为新学生分配座位
         for student in new_batch:
@@ -109,6 +117,8 @@ class SimulationEngine:
             PreferenceType.DIAGONAL: 0.25,
             PreferenceType.ADJACENT: 0.25
         }
+        # 重置人数分布类型为默认二次函数倒U型
+        self.distribution_type = DistributionType.QUADRATIC
 
     def get_real_time_stats(self) -> dict:
         """获取实时统计数据，供UI信息栏每步刷新显示"""
