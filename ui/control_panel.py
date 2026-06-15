@@ -10,7 +10,7 @@ from ui.charts import PreferencePieChart
 class ControlPanel(QWidget):
     # 创建一个信号，同时信号附带一个字典信息
     # 此信号需要创建在__init__之前，属于类属性
-    preferences_changed = Signal(dict)
+    preferences_changed = Signal(object)
 
     def __init__(self):
         super().__init__()

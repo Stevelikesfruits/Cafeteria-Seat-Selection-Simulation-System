@@ -5,6 +5,7 @@ from PySide6.QtCore import QTimer, Qt
 from core.simulation import SimulationEngine
 from ui.control_panel import ControlPanel
 from ui.restaurant_view import RestaurantView
+from ui.table_count_dialog import TableCountDialog
 
 # 定义MainWindow类
 class MainWindow(QMainWindow):
@@ -17,8 +18,14 @@ class MainWindow(QMainWindow):
         # 设置背景颜色为浅灰色
         self.setStyleSheet("background-color: #EAEAEA;")
 
+        # 初始弹窗：询问双人桌和四人桌数量
+        self._num_tables_2, self._num_tables_4, ok = TableCountDialog.get_table_counts()
+        if not ok:
+            # 用户取消则使用默认值
+            self._num_tables_2, self._num_tables_4 = 20, 20
+
         # 初始化仿真引擎
-        self.engine = SimulationEngine()
+        self.engine = SimulationEngine(self._num_tables_2, self._num_tables_4)
         # 初始化一个定时器，是程序每隔一段时间自动执行一段代码
         self.timer = QTimer()
         # 时间一到就执行on_simulation_step函数
@@ -198,10 +205,16 @@ class MainWindow(QMainWindow):
                                 f"综合满意度得分: {stats['total_satisfaction_score']}"
                                 )
 
+        # 重置前弹窗询问新的餐桌数量
+        num_2, num_4, ok = TableCountDialog.get_table_counts(
+            self._num_tables_2, self._num_tables_4, self
+        )
+        if ok:
+            self._num_tables_2, self._num_tables_4 = num_2, num_4
         # 进行重置
-        self.engine.reset()
+        self.engine.reset(self._num_tables_2, self._num_tables_4)
         # 刷新餐厅界面
-        self.restaurant_view.update_view(self.engine.restaurant)
+        self.restaurant_view.init_restaurant_layout(self.engine.restaurant)
         # 重置按钮和右侧操作栏
         self.control_panel.set_inputs_enabled(True)
         self.btn_start.setEnabled(True)
