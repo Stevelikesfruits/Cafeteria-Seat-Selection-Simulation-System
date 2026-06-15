@@ -3,9 +3,8 @@ from PySide6.QtWidgets import QMainWindow, QWidget, QHBoxLayout, QVBoxLayout, QL
 from PySide6.QtCore import QTimer, Qt
 # 从已添加的sys.path路径中导入自定义的类
 from core.simulation import SimulationEngine
-from ui.control_panel import ControlPanel
+from ui.control_panel import ControlPanel, PreferenceSettingsWindow, DistributionChartWindow
 from ui.restaurant_view import RestaurantView
-from ui.charts import DistributionLineChart
 from ui.table_count_dialog import TableCountDialog
 
 # 定义MainWindow类
@@ -39,20 +38,19 @@ class MainWindow(QMainWindow):
         # 用self.engine.restaurant中的参数搭建餐厅界面
         self.restaurant_view.init_restaurant_layout(self.engine.restaurant)
 
-        # 创建人流分布函数曲线图的独立窗口
-        self.chart_window = QWidget()
-        self.chart_window.setWindowTitle("人流分布函数曲线")
-        self.chart_window.resize(700, 400)
-        # 将DistributionLineChart图表放入窗口布局
-        chart_layout = QVBoxLayout(self.chart_window)
-        chart_layout.setContentsMargins(0, 0, 0, 0)
-        self.dist_chart = DistributionLineChart()
-        chart_layout.addWidget(self.dist_chart)
-        # 显示图表窗口
-        self.chart_window.show()
+        # 创建人群比例设置弹窗（默认隐藏，点击侧边栏按钮弹出）
+        self.pref_settings_window = PreferenceSettingsWindow()
+        # 当用户在弹窗内修改偏好权重时，同步更新仿真引擎
+        self.pref_settings_window.preferences_changed.connect(self.engine.update_preferences)
 
-        # 当用户在控制面板切换分布类型时，同步更新图表窗口的曲线
-        self.control_panel.distribution_changed.connect(self.dist_chart.set_distribution)
+        # 创建人流函数曲线弹窗（默认隐藏，点击侧边栏按钮弹出）
+        self.dist_chart_window = DistributionChartWindow()
+        # 当用户在侧边栏切换分布类型时，同步更新曲线弹窗
+        self.control_panel.distribution_changed.connect(self.dist_chart_window.set_distribution)
+
+        # 侧边栏按钮点击时弹出对应窗口
+        self.control_panel.btn_pref_settings.clicked.connect(self.pref_settings_window.show)
+        self.control_panel.btn_chart.clicked.connect(self.dist_chart_window.show)
 
     # 定义ui界面设置函数
     def init_ui(self):
@@ -171,8 +169,6 @@ class MainWindow(QMainWindow):
         # 设置右边操作栏
         self.control_panel = ControlPanel()
         self.control_panel.setFixedWidth(280)
-        # 当产生修改信号时，自动通知引擎，更新参数
-        self.control_panel.preferences_changed.connect(self.engine.update_preferences)
         # 当用户切换人数分布类型时，通知引擎更新分布类型
         self.control_panel.distribution_changed.connect(self.engine.update_distribution)
 
@@ -186,15 +182,15 @@ class MainWindow(QMainWindow):
 
     # 开始按钮关联函数：启动仿真
     def start_simulation(self):
-        # 检查参数总和是否为100
-        # 提取右侧所有控件里的值进行相加
-        total = sum(spin.value() for spin in self.control_panel.pref_inputs.values())
-        if total != 100:
-            QMessageBox.warning(self, "错误", "偏好百分比总和必须为100%！")
+        # 检查偏好权重是否全部为0
+        total_weight = self.pref_settings_window.get_total_weight()
+        if total_weight == 0:
+            QMessageBox.warning(self, "错误", "偏好权重不能全部为0，请至少给一个偏好设置非零值！")
             return
 
-        # 开始后禁用右侧输入框
+        # 开始后禁用侧边栏控件和弹窗输入框
         self.control_panel.set_inputs_enabled(False)
+        self.pref_settings_window.set_inputs_enabled(False)
         # 重新设置按钮状态
         self.btn_start.setEnabled(False)
         self.btn_pause.setEnabled(True)
@@ -240,6 +236,8 @@ class MainWindow(QMainWindow):
         self.restaurant_view.init_restaurant_layout(self.engine.restaurant)
         # 重置按钮和右侧操作栏
         self.control_panel.set_inputs_enabled(True)
+        # 重新启用人流比例弹窗的输入框
+        self.pref_settings_window.set_inputs_enabled(True)
         self.btn_start.setEnabled(True)
         self.btn_end.setEnabled(False)
         self.btn_pause.setEnabled(False)
