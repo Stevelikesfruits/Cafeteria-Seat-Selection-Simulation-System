@@ -63,3 +63,7 @@ Desktop.ini
 *.temp
 models_单元测试报告.docx
 tests/generate_report.py
+
+# Deployment build output
+deploy/dist/
+deploy/Output/
