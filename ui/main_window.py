@@ -290,3 +290,7 @@ class MainWindow(QMainWindow):
 
         # 同步更新人流函数曲线图上的时间竖线和绿色填充
         self.dist_chart_window.set_time(stats['current_time'])
+
+        # 仿真时间达到60分钟时自动结束
+        if stats['current_time'] >= 60:
+            self.end_simulation()
