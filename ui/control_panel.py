@@ -163,7 +163,7 @@ class ControlPanel(QWidget):
 
     def __init__(self):
         super().__init__()
-        self._init_ui()
+        self.init_ui()
 
     def init_ui(self):
         layout = QVBoxLayout(self)
